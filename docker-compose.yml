@@ -1,0 +1,31 @@
+name: task-mgmt-api
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: helpdesk
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    # ports:
+    #   - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  api:
+    build:
+      context: .
+      dockerfile: HelpDesk.API/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Database__ConnectionString: Host=db;Port=5432;Database=helpdesk;Username=postgres;Password=postgres
+      Jwt__Issuer: HelpDesk.API
+      Jwt__Audience: HelpDesk.Client
+      Jwt__Key: ReplaceMe_AtLeast32CharactersLong_ForJwt
+    ports:
+      - "8087:8080"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
